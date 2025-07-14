@@ -366,37 +366,52 @@
       else showSummary();
     };
 
-    // Show summary + clear state
-    function showSummary() {
-      quizPage.classList.add('hidden');
-      summaryPage.classList.remove('hidden');
-      clearInterval(timerInterval);
+    function sendToGoogleSheet(timeUsedText) {
+  const scriptURL = "[https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec](https://script.google.com/macros/s/AKfycbzx1eKJxUKGulqLoYdaZkc0CLYWlCw1RFCVCxu54XBmroc3Kd0-3YQfF-owNP7xoJb8/exec)"; // เปลี่ยนเป็น URL ของคุณ
+  const payload = {
+    name: userData.name,
+    department: userData.department,
+    team: userData.team,
+    score: score,
+    timeUsed: timeUsedText
+  };
 
-      const used = Math.floor((Date.now() - startTime)/1000);
-      const m    = Math.floor(used/60), s = used % 60;
-      const base = `${userData.name} (${userData.department} - ${userData.team}) ได้ ${score}/${questions.length}`;
-      const pf   = score>=36 ? translations[lang].passed : translations[lang].failed;
-
-      resultEl.innerHTML = `
-        ${base}<br>
-        <span>${pf}</span><br>
-        ⏱ ${translations[lang].timeUsed}: ${m} นาที ${s} วินาที
-      `;
-      userNameInput.value   = userData.name;
-      userResultInput.value = base;
-      clearState();
-    }
-    fetch("https://script.google.com/macros/s/AKfycbzx1eKJxUKGulqLoYdaZkc0CLYWlCw1RFCVCxu54XBmroc3Kd0-3YQfF-owNP7xoJb8/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-      name: userData.name,
-      department: userData.department,
-      team: userData.team,
-      score: score,
-      timeUsed: `${min}m ${sec}s`
+  fetch(scriptURL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   })
-});
+  .then(res => res.text())
+  .then(msg => console.log("📋 ส่งข้อมูลไป Google Sheet:", msg))
+  .catch(err => console.error("❌ ส่งข้อมูลล้มเหลว:", err));
+}
+
+
+    // Show summary + clear state
+function showSummary() {
+  quizPage.classList.add('hidden');
+  summaryPage.classList.remove('hidden');
+  clearInterval(timerInterval);
+
+  const used = Math.floor((Date.now() - startTime)/1000);
+  const m    = Math.floor(used/60), s = used % 60;
+  const base = `${userData.name} (${userData.department} - ${userData.team}) ได้ ${score}/${questions.length}`;
+  const pf   = score >= 36 ? translations[lang].passed : translations[lang].failed;
+
+  resultEl.innerHTML = `
+    ${base}<br>
+    <span>${pf}</span><br>
+    ⏱ ${translations[lang].timeUsed}: ${m} นาที ${s} วินาที
+  `;
+
+  userNameInput.value   = userData.name;
+  userResultInput.value = base;
+
+  // ✅ เรียกฟังก์ชันเพื่อส่งข้อมูลไป Google Sheet
+  sendToGoogleSheet(`${m}m ${s}s`);
+
+  clearState();
+}
 
     // Download Certificate
     downloadBtn.onclick = () => {
