@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Forklift Quiz (สองภาษา + Progress + Timer + Resume + Certificate)</title>
+  <title>Forklift Quiz</title>
 
   <!-- Bootstrap CSS -->
   <link
@@ -386,6 +386,17 @@
       userResultInput.value = base;
       clearState();
     }
+    fetch("https://script.google.com/macros/s/AKfycbzx1eKJxUKGulqLoYdaZkc0CLYWlCw1RFCVCxu54XBmroc3Kd0-3YQfF-owNP7xoJb8/exec", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+      name: userData.name,
+      department: userData.department,
+      team: userData.team,
+      score: score,
+      timeUsed: `${min}m ${sec}s`
+  })
+});
 
     // Download Certificate
     downloadBtn.onclick = () => {
